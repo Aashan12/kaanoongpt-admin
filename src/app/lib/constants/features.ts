@@ -1,0 +1,9 @@
+export const FEATURES = {
+  ENABLE_MODEL_TESTING: true,
+  ENABLE_BULK_OPERATIONS: true,
+  ENABLE_EXPORT: true,
+  ENABLE_IMPORT: true,
+  ENABLE_ADVANCED_FILTERS: true,
+  ENABLE_ANALYTICS: false,
+  ENABLE_NOTIFICATIONS: true,
+} as const;
