@@ -1,0 +1,161 @@
+/* Model Management Page - Inherits from countries.css */
+@import '../countries/countries.css';
+
+/* ============================================================================
+   MODELS SPECIFIC STYLES
+   ============================================================================ */
+
+.models-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  width: 100%;
+}
+
+.models-toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ============================================================================
+   MODEL TABLE CELLS
+   ============================================================================ */
+
+.model-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cell-model {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.cell-provider {
+  color: #475569;
+  font-weight: 500;
+}
+
+.cell-model-id {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #3b82f6;
+  font-size: 13px;
+}
+
+.cell-model-id code {
+  background: #f0f9ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #bae6fd;
+}
+
+.cell-cost {
+  color: #64748b;
+  max-width: 200px;
+}
+
+.btn-action.test {
+  background: #dbeafe;
+  color: #0284c7;
+}
+
+.btn-action.test:hover {
+  background: #bfdbfe;
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+}
+
+/* ============================================================================
+   PROVIDER BADGES
+   ============================================================================ */
+
+.provider-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.provider-openai {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.provider-anthropic {
+  background: #fed7aa;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+}
+
+.provider-ollama {
+  background: #dbeafe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+}
+
+.provider-groq {
+  background: #e9d5ff;
+  color: #6b21a8;
+  border: 1px solid #d8b4fe;
+}
+
+.provider-together {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.provider-custom {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+/* ============================================================================
+   STATUS INDICATORS
+   ============================================================================ */
+
+.status-active {
+  color: #059669;
+}
+
+.status-inactive {
+  color: #dc2626;
+}
+
+.status-error {
+  color: #ea580c;
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .models-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .premium-search {
+    width: 100%;
+  }
+
+  .premium-btn-add {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cell-cost {
+    max-width: 150px;
+  }
+}
