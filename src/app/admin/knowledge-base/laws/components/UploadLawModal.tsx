@@ -29,6 +29,7 @@ export default function UploadLawModal({ isOpen, onClose, onSuccess }: UploadLaw
   const [states, setStates] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [filteredStates, setFilteredStates] = useState<any[]>([]);
+  const [selectedCountryId, setSelectedCountryId] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -38,34 +39,34 @@ export default function UploadLawModal({ isOpen, onClose, onSuccess }: UploadLaw
 
   useEffect(() => {
     // Filter states based on selected country
-    if (formData.country) {
-      const filtered = states.filter(state => state.country_id === formData.country);
+    if (selectedCountryId) {
+      const filtered = states.filter(state => state.country_id === selectedCountryId);
       setFilteredStates(filtered);
     } else {
       setFilteredStates([]);
     }
-  }, [formData.country, states]);
+  }, [selectedCountryId, states]);
 
   const fetchSystemSetupData = async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch countries
-      const countriesRes = await fetch('http://localhost:8000/api/admin/system-setup/countries', { headers });
+      // Fetch countries (paginated response: { data: [...] })
+      const countriesRes = await fetch('http://localhost:8000/api/admin/system-setup/countries?limit=100', { headers });
       if (countriesRes.ok) {
-        const countriesData = await countriesRes.json();
-        setCountries(countriesData);
+        const countriesJson = await countriesRes.json();
+        setCountries(countriesJson.data || countriesJson);
       }
 
-      // Fetch states
-      const statesRes = await fetch('http://localhost:8000/api/admin/system-setup/states', { headers });
+      // Fetch states (paginated response: { data: [...] })
+      const statesRes = await fetch('http://localhost:8000/api/admin/system-setup/states?limit=100', { headers });
       if (statesRes.ok) {
-        const statesData = await statesRes.json();
-        setStates(statesData);
+        const statesJson = await statesRes.json();
+        setStates(statesJson.data || statesJson);
       }
 
-      // Fetch law categories
+      // Fetch law categories (returns plain array)
       const categoriesRes = await fetch('http://localhost:8000/api/admin/system-setup/law-categories', { headers });
       if (categoriesRes.ok) {
         const categoriesData = await categoriesRes.json();
@@ -77,10 +78,11 @@ export default function UploadLawModal({ isOpen, onClose, onSuccess }: UploadLaw
   };
 
   const handleCountryChange = (countryId: string) => {
-    const selectedCountry = countries.find(c => c.id === countryId);
+    const selectedCountry = countries.find((c: any) => c.id === countryId);
+    setSelectedCountryId(countryId);
     setFormData({
       ...formData,
-      country: countryId,
+      country: selectedCountry?.name || '',
       country_code: selectedCountry?.code || '',
       state: '' // Reset state when country changes
     });
@@ -145,6 +147,7 @@ export default function UploadLawModal({ isOpen, onClose, onSuccess }: UploadLaw
       keywords: '',
       summary: ''
     });
+    setSelectedCountryId('');
     setFile(null);
     setError('');
   };
@@ -202,11 +205,11 @@ export default function UploadLawModal({ isOpen, onClose, onSuccess }: UploadLaw
               <label>Country *</label>
               <select
                 required
-                value={formData.country}
+                value={selectedCountryId}
                 onChange={(e) => handleCountryChange(e.target.value)}
               >
                 <option value="">Select Country</option>
-                {countries.map((country) => (
+                {countries.map((country: any) => (
                   <option key={country.id} value={country.id}>{country.name}</option>
                 ))}
               </select>
@@ -229,7 +232,7 @@ export default function UploadLawModal({ isOpen, onClose, onSuccess }: UploadLaw
               <select
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                disabled={!formData.country}
+                disabled={!selectedCountryId}
               >
                 <option value="">Select State (Optional)</option>
                 {filteredStates.map((state) => (

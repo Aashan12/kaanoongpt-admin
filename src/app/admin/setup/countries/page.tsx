@@ -7,19 +7,30 @@ import './countries.css';
 
 interface Country {
   id: string;
+  _id?: string;
   name: string;
   code: string;
   description?: string;
   is_active: boolean;
+  enabled_features: string[];
   created_at: string;
 }
+
+const ALL_FEATURES = [
+  { key: 'courtroom_simulator', label: 'Courtroom Simulator', icon: '⚖️' },
+  { key: 'ask_the_law', label: 'Ask the Law', icon: '💬' },
+  { key: 'case_predictor', label: 'Case Predictor', icon: '📊' },
+  { key: 'legal_case_search', label: 'Legal Case Search', icon: '🔍' },
+  { key: 'kanoon_analyze', label: 'Kanoon Analyze', icon: '🔄' },
+  { key: 'drafting_assistant', label: 'Drafting Assistant', icon: '✏️' },
+];
 
 export default function CountriesPage() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', code: '', description: '', is_active: true });
+  const [formData, setFormData] = useState({ name: '', code: '', description: '', is_active: true, enabled_features: ALL_FEATURES.map(f => f.key) });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -101,6 +112,7 @@ export default function CountriesPage() {
         code: formData.code,
         description: formData.description,
         is_active: formData.is_active !== undefined ? formData.is_active : true,
+        enabled_features: formData.enabled_features,
       };
 
       const response = await fetch(url, {
@@ -111,7 +123,7 @@ export default function CountriesPage() {
 
       if (response.ok) {
         setSuccess(editingId ? 'Country updated successfully' : 'Country added successfully');
-        setFormData({ name: '', code: '', description: '', is_active: true });
+        setFormData({ name: '', code: '', description: '', is_active: true, enabled_features: ALL_FEATURES.map(f => f.key) });
         setEditingId(null);
         setShowForm(false);
         setTimeout(() => setSuccess(''), 3000);
@@ -155,13 +167,15 @@ export default function CountriesPage() {
   };
 
   const handleEditCountry = (country: Country) => {
+    const countryId = country.id || country._id || '';
     setFormData({
       name: country.name,
       code: country.code,
       description: country.description || '',
       is_active: country.is_active,
+      enabled_features: country.enabled_features || ALL_FEATURES.map(f => f.key),
     });
-    setEditingId(country.id);
+    setEditingId(countryId);
     setShowForm(true);
     setError('');
   };
@@ -169,7 +183,7 @@ export default function CountriesPage() {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ name: '', code: '', description: '', is_active: true });
+    setFormData({ name: '', code: '', description: '', is_active: true, enabled_features: ALL_FEATURES.map(f => f.key) });
     setError('');
   };
 
@@ -307,6 +321,36 @@ export default function CountriesPage() {
                       </label>
                     </div>
                   </div>
+                  <div className="form-group">
+                    <label>Enabled Features</label>
+                    <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px 0' }}>
+                      Select which services are available for users in this country
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {ALL_FEATURES.map((f) => (
+                        <label key={f.key} style={{
+                          display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '10px 14px', background: formData.enabled_features.includes(f.key) ? '#f0f9ff' : '#f8fafc',
+                          border: `1px solid ${formData.enabled_features.includes(f.key) ? '#3b82f6' : '#e2e8f0'}`,
+                          borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s',
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={formData.enabled_features.includes(f.key)}
+                            onChange={(e) => {
+                              const features = e.target.checked
+                                ? [...formData.enabled_features, f.key]
+                                : formData.enabled_features.filter((k: string) => k !== f.key);
+                              setFormData({ ...formData, enabled_features: features });
+                            }}
+                            style={{ accentColor: '#3b82f6', width: '18px', height: '18px' }}
+                          />
+                          <span style={{ fontSize: '16px' }}>{f.icon}</span>
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>{f.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                   <div className="form-actions">
                     <button type="submit" className="btn-submit">
                       {editingId ? 'Save' : 'Create Country'}
@@ -384,6 +428,7 @@ export default function CountriesPage() {
                     <tr>
                       <th>Country</th>
                       <th>Code</th>
+                      <th>Features</th>
                       <th>Description</th>
                       <th>Status</th>
                       <th>Actions</th>
@@ -391,7 +436,7 @@ export default function CountriesPage() {
                   </thead>
                   <tbody>
                     {countries.map((country) => (
-                      <tr key={country.id} className="table-row">
+                      <tr key={country.id || country._id} className="table-row">
                         <td className="cell-country">
                           <div className="country-badge">
                             <Globe size={16} color="#000000" />
@@ -400,6 +445,23 @@ export default function CountriesPage() {
                         </td>
                         <td className="cell-code">
                           <code>{country.code}</code>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {(country.enabled_features || []).map((f) => {
+                              const feat = ALL_FEATURES.find(af => af.key === f);
+                              return feat ? (
+                                <span key={f} title={feat.label} style={{
+                                  fontSize: '14px', padding: '2px 6px',
+                                  background: '#f0f9ff', borderRadius: '4px',
+                                  border: '1px solid #bae6fd',
+                                }}>{feat.icon}</span>
+                              ) : null;
+                            })}
+                            {(!country.enabled_features || country.enabled_features.length === 0) && (
+                              <span style={{ color: '#94a3b8', fontSize: '12px' }}>None</span>
+                            )}
+                          </div>
                         </td>
                         <td className="cell-description">
                           {country.description || <span className="text-muted">—</span>}
@@ -419,7 +481,7 @@ export default function CountriesPage() {
                           </button>
                           <button
                             className="btn-action delete"
-                            onClick={() => handleOpenDeleteModal(country.id, country.name)}
+                            onClick={() => handleOpenDeleteModal(country.id || country._id || '', country.name)}
                             title="Delete"
                           >
                             <Trash2 size={16} />
