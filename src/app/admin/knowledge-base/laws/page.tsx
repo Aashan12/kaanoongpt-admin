@@ -84,9 +84,39 @@ export default function LawsManagementPage() {
       const params = new URLSearchParams();
       if (selectedCountry) params.append('country_code', selectedCountry);
       if (filterCategory) params.append('category', filterCategory);
-      const res = await fetch(`${API}/laws?${params}`, { headers: { Authorization: `Bearer ${getToken()}` } });
-      if (res.ok) setLaws(await res.json());
-    } catch (e) { console.error('Error fetching laws:', e); }
+      const token = getToken();
+      
+      if (!token) {
+        console.error('❌ No admin token found. Please login first.');
+        alert('Please login first at /admin/login');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('🔍 Fetching laws with token:', token ? 'Present' : 'Missing');
+      console.log('🔍 API URL:', `${API}/laws?${params}`);
+      const res = await fetch(`${API}/laws?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+      console.log('🔍 Response status:', res.status);
+      
+      if (res.status === 401) {
+        alert('Session expired. Please login again.');
+        window.location.href = '/admin/login';
+        return;
+      }
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('🔍 Laws data:', data);
+        setLaws(data);
+      } else {
+        const errorData = await res.json();
+        console.error('❌ Error response:', errorData);
+        alert(`Error: ${errorData.detail || 'Failed to fetch laws'}`);
+      }
+    } catch (e) { 
+      console.error('❌ Error fetching laws:', e);
+      alert('Network error. Make sure the backend is running on port 8000.');
+    }
     finally { setLoading(false); }
   }, [selectedCountry, filterCategory]);
 
